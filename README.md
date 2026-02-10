@@ -133,23 +133,18 @@ $$\nabla J(\theta) = \frac{1}{m} X^T(X\theta - y)$$
 
 1. **Compute predictions:** 
    $$h = X\theta$$
-   Example: $\begin{bmatrix} 1 & 0.5 \\ 1 & 0.75 \end{bmatrix} \begin{bmatrix} 0.2 \\ 0.3 \end{bmatrix} = \begin{bmatrix} 0.35 \\ 0.425 \end{bmatrix}$
 
 2. **Compute errors:**
    $$error = h - y$$
-   Example: $\begin{bmatrix} 0.35 \\ 0.425 \end{bmatrix} - \begin{bmatrix} 0.4 \\ 0.45 \end{bmatrix} = \begin{bmatrix} -0.05 \\ -0.025 \end{bmatrix}$
 
 3. **Compute cost:**
    $$J = \frac{1}{2m}\sum(error^2)$$
-   Example: $\frac{1}{4}(0.0025 + 0.000625) = 0.00078125$
 
 4. **Compute gradient:**
    $$\nabla = \frac{1}{m}X^T \cdot error$$
-   Example: $\frac{1}{2}\begin{bmatrix} 1 & 1 \\ 0.5 & 0.75 \end{bmatrix} \begin{bmatrix} -0.05 \\ -0.025 \end{bmatrix} = \begin{bmatrix} -0.0375 \\ -0.01875 \end{bmatrix}$
 
 5. **Update parameters:**
    $$\theta := \theta - \alpha \nabla$$
-   Example: $\begin{bmatrix} 0.2 \\ 0.3 \end{bmatrix} - 0.01 \begin{bmatrix} -0.0375 \\ -0.01875 \end{bmatrix} = \begin{bmatrix} 0.200375 \\ 0.3001875 \end{bmatrix}$
 
 We run this for **80,000 epochs**. The cost $J$ decreases each iteration until convergence. We plot cost vs epoch number to verify convergence.
 
