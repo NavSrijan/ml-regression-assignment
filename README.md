@@ -82,14 +82,14 @@ $$x_{scaled} = \frac{x}{x_{max}}$$
 
 ### Matrix Formulation
 
-To handle the intercept $\theta_0$ elegantly, we add a column of 1's to $X$:
-
-$$X = \begin{bmatrix} 1 & x_1 \\ 1 & x_2 \\ \vdots & \vdots \\ 1 & x_m \end{bmatrix}, \quad \theta = \begin{bmatrix} \theta_0 \\ \theta_1 \end{bmatrix}, \quad y = \begin{bmatrix} y_1 \\ y_2 \\ \vdots \\ y_m \end{bmatrix}$$
+To handle the intercept $\theta_0$ elegantly, we add a column of 1's to $X$. This way:
+- $X$ becomes an $m \times 2$ matrix: first column is all 1's, second column is engine sizes
+- $\theta$ is a $2 \times 1$ vector: $[\theta_0, \theta_1]$
+- $y$ is an $m \times 1$ vector of prices
 
 Now our model becomes: $\hat{y} = X\theta$
 
-**Matrix multiplication expands to:**
-$$\begin{bmatrix} \hat{y}_1 \\ \hat{y}_2 \\ \vdots \\ \hat{y}_m \end{bmatrix} = \begin{bmatrix} 1 & x_1 \\ 1 & x_2 \\ \vdots & \vdots \\ 1 & x_m \end{bmatrix} \begin{bmatrix} \theta_0 \\ \theta_1 \end{bmatrix} = \begin{bmatrix} \theta_0 + \theta_1 x_1 \\ \theta_0 + \theta_1 x_2 \\ \vdots \\ \theta_0 + \theta_1 x_m \end{bmatrix}$$
+This matrix multiplication gives us predictions for all examples at once. Each row computes: $\hat{y}_i = 1 \times \theta_0 + x_i \times \theta_1 = \theta_0 + \theta_1 x_i$
 
 ### Cost Function (Mean Squared Error)
 
@@ -178,16 +178,10 @@ $$price = 5000 + 50(2020) + 30(1500) - 10(50000) = -393000$$
 
 ### Matrix Formulation
 
-For $m$ examples and $n$ features:
-
-$$X = \begin{bmatrix} 
-1 & x_1^{(1)} & x_2^{(1)} & \cdots & x_n^{(1)} \\
-1 & x_1^{(2)} & x_2^{(2)} & \cdots & x_n^{(2)} \\
-\vdots & \vdots & \vdots & \ddots & \vdots \\
-1 & x_1^{(m)} & x_2^{(m)} & \cdots & x_n^{(m)}
-\end{bmatrix}_{m \times (n+1)}$$
-
-$$\theta = \begin{bmatrix} \theta_0 \\ \theta_1 \\ \vdots \\ \theta_n \end{bmatrix}_{(n+1) \times 1}, \quad y = \begin{bmatrix} y_1 \\ y_2 \\ \vdots \\ y_m \end{bmatrix}_{m \times 1}$$
+For $m$ examples and $n$ features, we construct:
+- $X$: an $m \times (n+1)$ matrix with first column of 1's, then all features
+- $\theta$: an $(n+1) \times 1$ vector of parameters
+- $y$: an $m \times 1$ vector of target values
 
 The model remains: $\hat{y} = X\theta$ (now with more columns in $X$)
 
@@ -209,7 +203,7 @@ y_train, y_test = y[p[:split]], y[p[split:]]
 
 The math is identical to Part B, just with more dimensions:
 
-1. Initialize: $\theta = \begin{bmatrix} 0 \\ 0 \\ \vdots \\ 0 \end{bmatrix}$ (one zero per feature + intercept)
+1. Initialize: $\theta$ as vector of zeros (one zero per feature + intercept)
 
 2. For each epoch (500 times):
    - $h = X_{train}\theta$ (predictions on training data)
