@@ -65,8 +65,7 @@ Where:
 - $\theta_0$ = intercept (base price when engine = 0)
 - $\theta_1$ = slope (price change per unit engine size increase)
 
-**Example:** If $\theta_0 = 5000$ and $\theta_1 = 50$, then a car with engine = 1500 cc:
-$$\hat{y} = 5000 + 50(1500) = 80000$$
+After training on our dataset of 7906 cars, the model learned $\theta_0 = -0.042$ and $\theta_1 = 0.265$ (on normalized scale).
 
 ### Feature Scaling (Normalization)
 
@@ -76,9 +75,7 @@ $$x_{scaled} = \frac{x}{x_{max}}$$
 
 **Why?** Gradient descent converges faster when features are on similar scales.
 
-**Example:** If max engine size is 2000 cc:
-- Original: 1000 cc → Scaled: $\frac{1000}{2000} = 0.5$
-- Original: 1500 cc → Scaled: $\frac{1500}{2000} = 0.75$
+For instance, in our dataset the maximum engine size determines the scaling factor for all engine values.
 
 ### Matrix Formulation
 
@@ -168,13 +165,7 @@ With $n$ features, our model becomes:
 
 $$\hat{y} = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + \theta_3 x_3 + ... + \theta_n x_n$$
 
-**Example with 3 features (year, engine, mileage):**
-$$price = \theta_0 + \theta_1 \cdot year + \theta_2 \cdot engine + \theta_3 \cdot mileage$$
-
-If $\theta = [5000, 50, 30, -10]$ and car has [year=2020, engine=1500, mileage=50000]:
-$$price = 5000 + 50(2020) + 30(1500) - 10(50000) = -393000$$
-
-(After scaling, these numbers become reasonable!)
+Our model uses 17 parameters (1 intercept + 16 features from one-hot encoded data) trained on 6324 training samples and tested on 1582 samples.
 
 ### Matrix Formulation
 
@@ -226,11 +217,7 @@ $$RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$$
 3. Average all squared errors: $MSE = \frac{1}{n}\sum e_i^2$
 4. Take square root: $RMSE = \sqrt{MSE}$
 
-**Example:** Predictions [100k, 110k, 95k], Actuals [102k, 108k, 97k]
-- Errors: [-2k, 2k, -2k]
-- Squared: [4M, 4M, 4M]
-- MSE: $\frac{12M}{3} = 4M$
-- RMSE: $\sqrt{4M} = 2000$
+In our implementation, the test set achieved RMSE = 683,756 rupees, meaning predictions deviate by approximately 6.8 lakh rupees on average.
 
 #### 2. R-Squared ($R^2$) — Coefficient of Determination
 
@@ -257,17 +244,19 @@ Where:
 4. **Calculate $R^2$:**
    $$R^2 = 1 - \frac{SS_{res}}{SS_{tot}}$$
 
-**Example calculation:**
-Actuals: [100, 150, 120] → Mean $\bar{y} = 123.33$
-Predictions: [105, 145, 125]
-
-$SS_{tot} = (100-123.33)^2 + (150-123.33)^2 + (120-123.33)^2 = 1255.56$
-$SS_{res} = (100-105)^2 + (150-145)^2 + (120-125)^2 = 50$
-$R^2 = 1 - \frac{50}{1255.56} = 0.96$
+In our multiple linear regression model:
+- Training R²: 0.3416 (explained 34.16% of price variance)
+- Test R²: 0.3308 (explained 33.08% of price variance)
+- Generalization gap: only 1.09%, indicating good generalization
 
 ### Checking for Overfitting
 
 We compare $R^2$ on training and test sets. Large gap between train and test $R^2$ indicates overfitting.
+
+**Our results:**
+- Training: RMSE = 655,480, R² = 0.3416
+- Test: RMSE = 683,756, R² = 0.3308
+- Gap: 1.09% (minimal overfitting)
 
 ---
 
@@ -297,15 +286,11 @@ $$+ \theta_5(year^2) + \theta_6(engine^2) + \theta_7(power^2) + \theta_8(km^2)$$
 
 **Why this captures curves:**
 
-Simple example with one feature:
-$$price = 5000 + 100(engine) - 0.02(engine^2)$$
+For example, to fit a curved relationship:
 
-For different engine sizes:
-- 1000 cc: $5000 + 100(1000) - 0.02(1000^2) = 5000 + 100000 - 20000 = 85000$
-- 1500 cc: $5000 + 100(1500) - 0.02(1500^2) = 5000 + 150000 - 45000 = 110000$
-- 2000 cc: $5000 + 100(2000) - 0.02(2000^2) = 5000 + 200000 - 80000 = 125000$
+$$price = \theta_0 + \theta_1 \cdot engine + \theta_2 \cdot engine^2$$
 
-The negative $\theta_2$ creates a curve that grows slower at high engine sizes.
+If $\theta_2$ is negative, the relationship curves downward (diminishing returns). If positive, it accelerates upward.
 
 Even though the relationship with engine is non-linear, it's still linear in $\theta$, so we can use the same gradient descent algorithm.
 
@@ -313,9 +298,15 @@ Even though the relationship with engine is non-linear, it's still linear in $\t
 
 Identical process to Part C:
 1. Scale all features (including squared ones)
-2. Add intercept column
+2. Add intercept column  
 3. Run gradient descent for 1000 epochs
 4. Evaluate on train and test sets
+
+**Our results with polynomial features (21 parameters):**
+- Training: RMSE = 578,477, R² = 0.4872
+- Test: RMSE = 603,859, R² = 0.4780
+- Gap: 0.92% (excellent generalization)
+- Improvement: R² increased from 33% to 48% by adding squared features
 
 ### Interpreting Coefficients
 
@@ -395,16 +386,8 @@ $$DW = \frac{\sum_{i=2}^{n}(e_i - e_{i-1})^2}{\sum_{i=1}^{n}e_i^2}$$
 - DW < 1.5: Positive autocorrelation
 - DW > 2.5: Negative autocorrelation
 
-**Example:**
-Residuals: [100, 120, 110, 130, 115]
-
-Numerator: $(120-100)^2 + (110-120)^2 + (130-110)^2 + (115-130)^2$
-         $= 400 + 100 + 400 + 225 = 1125$
-
-Denominator: $100^2 + 120^2 + 110^2 + 130^2 + 115^2$
-            $= 10000 + 14400 + 12100 + 16900 + 13225 = 66625$
-
-$DW = \frac{1125}{66625} = 0.0169$
+**Calculation example:**
+For a sequence of residuals $e = [e_1, e_2, ..., e_n]$, we compute differences between consecutive residuals, square them, sum them up, and divide by the sum of squared residuals.
 
 ### Model Comparison
 
