@@ -313,6 +313,56 @@ For feature $x_i$ with linear coefficient $\theta_i$ and quadratic coefficient $
 
 ---
 
+## Part E: Regularization
+
+We introduce regularization techniques to prevent overfitting and perform feature selection by penalizing large model coefficients. We implement both Ridge (L2) and Lasso (L1) regression from scratch.
+
+### 1. Ridge Regression (L2 Regularization)
+
+Ridge regression adds a penalty proportional to the sum of squared coefficients to the Mean Squared Error (MSE) cost function:
+
+$$J(\theta) = \frac{1}{2m} \sum_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)})^2 + \frac{\lambda}{2m} \sum_{j=1}^{n} \theta_j^2$$
+
+Where:
+- $\lambda$ (lambda) is the regularization strength.
+- We do **not** regularize the intercept term ($\theta_0$).
+
+#### Gradient descent update rule:
+$$\theta_0 := \theta_0 - \alpha \left( \frac{1}{m} \sum_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \right)$$
+$$\theta_j := \theta_j - \alpha \left( \frac{1}{m} \sum_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_j^{(i)} + \frac{\lambda}{m} \theta_j \right) \quad (\text{for } j \ge 1)$$
+
+In matrix form:
+$$\theta := \theta - \alpha \left( \frac{1}{m} X^T(X\theta - y) + \frac{\lambda}{m} \theta_{reg} \right)$$
+Where $\theta_{reg} = [0, \theta_1, \theta_2, \dots, \theta_n]^T$.
+
+---
+
+### 2. Lasso Regression (L1 Regularization)
+
+Lasso regression adds a penalty proportional to the sum of absolute values of the coefficients:
+
+$$J(\theta) = \frac{1}{2m} \sum_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)})^2 + \frac{\lambda}{m} \sum_{j=1}^{n} |\theta_j|$$
+
+Since the absolute value function $|\theta_j|$ is not differentiable at $\theta_j = 0$, we use subgradient descent. The subgradient of $|\theta_j|$ is the sign function:
+
+$$\text{sign}(\theta_j) = \begin{cases} 1 & \text{if } \theta_j > 0 \\ -1 & \text{if } \theta_j < 0 \\ 0 & \text{if } \theta_j = 0 \end{cases}$$
+
+#### Subgradient descent update rule:
+$$\theta_0 := \theta_0 - \alpha \left( \frac{1}{m} \sum_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \right)$$
+$$\theta_j := \theta_j - \alpha \left( \frac{1}{m} \sum_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_j^{(i)} + \frac{\lambda}{m} \text{sign}(\theta_j) \right) \quad (\text{for } j \ge 1)$$
+
+---
+
+### 3. Ridge vs. Lasso: Feature Selection Comparison
+
+- **Ridge Regression (L2)**: Shrinks the coefficients close to zero but keeps all features. It is ideal for handling collinearity/multicollinearity.
+- **Lasso Regression (L1)**: Shrinks some coefficients to **exactly zero**, thereby performing automatic **feature selection** and leaving a simpler, more interpretable model.
+
+Our training results with $\lambda = 1.0$ show that Lasso reduces the coefficient values of several categorical features (like specific brands or body types) to exactly 0, whereas Ridge retains them all with small values.
+
+---
+
+
 ## Part F: Model Diagnostics
 
 We validate our models by checking if they satisfy regression assumptions. Violating these can make our model unreliable even with good $R^2$.
@@ -387,3 +437,85 @@ For a sequence of residuals $e = [e_1, e_2, ..., e_n]$, we compute differences b
 ### Model Comparison
 
 We calculate $R^2$ for all three models on both train and test sets to compare performance and check for overfitting.
+
+---
+
+## Part G: Classification Algorithms
+
+We extend the project to classification tasks by implementing several core classifiers from scratch using NumPy and validating them on synthetic datasets.
+
+### 1. Linear Discriminant Analysis (LDA)
+LDA projects data into a lower-dimensional space to maximize class separability by finding the projection vector $w$ that maximizes the ratio of between-class variance ($S_B$) to within-class variance ($S_W$):
+$$J(w) = \frac{w^T S_B w}{w^T S_W w}$$
+
+### 2. Logistic Regression (Binary and Multinomial)
+- **Binary Logistic Regression**: Maps inputs to probabilities using the Sigmoid function $\sigma(z) = \frac{1}{1 + e^{-z}}$ and minimizes cross-entropy loss using gradient descent.
+- **Multinomial Logistic Regression (Softmax)**: Extends classification to $K$ classes using the Softmax activation function:
+$$P(y = c | x) = \frac{e^{w_c^T x}}{\sum_{j=1}^{K} e^{w_j^T x}}$$
+
+### 3. Naive Bayes Classifier (Gaussian)
+Based on Bayes' Theorem, Gaussian Naive Bayes assumes that features are conditionally independent given the class label and follow a normal distribution:
+$$P(x_i | y) = \frac{1}{\sqrt{2\pi\sigma_y^2}} \exp\left(-\frac{(x_i - \mu_y)^2}{2\\sigma_y^2}\right)$$
+
+### 4. Support Vector Machine (SVM)
+We formulate SVM using Hinge Loss and RBF (Gaussian) kernels, optimized using subgradient descent:
+$$J(w, b) = \frac{1}{2} ||w||^2 + C \sum_{i=1}^{m} \max(0, 1 - y^{(i)}(w^T \Phi(x^{(i)}) + b))$$
+
+---
+
+## Part H: Decision Trees and Neural Networks
+
+We implement advanced supervised models from scratch:
+
+### 1. Decision Trees & Regression Trees
+- **Decision Trees**: Classifies data by splitting nodes to maximize Information Gain based on Entropy:
+$$\text{Entropy}(y) = -\sum p_i \log_2(p_i)$$
+- **Regression Trees**: Predicts continuous values by splitting nodes to maximize Variance Reduction.
+- **Stopping & Pruning**: We implement stopping criteria including `max_depth` and `min_samples_split`.
+
+### 2. Artificial Neural Networks (ANN)
+We implement a Multi-Layer Perceptron (MLP) from scratch:
+- **Perceptron Learning Algorithm (PLA)**: Formulates weights for binary linearly separable data.
+- **Backpropagation**: Calculates partial derivatives of the loss function with respect to weights using the chain rule and updates weights using gradient descent.
+- **Initialization & Validation**: Implements Xavier/He weight initialization and tracks performance on a validation split.
+
+---
+
+## Part I: Unsupervised Learning & Association Mining
+
+### 1. K-Means Clustering (Partitional)
+Partitions data into $K$ distinct clusters by minimizing the within-cluster sum of squared distances to cluster centroids.
+
+### 2. Agglomerative Hierarchical Clustering
+Implements bottom-up hierarchical clustering using the single-linkage distance metric to merge clusters:
+$$d(A, B) = \min \{ d(x, y) : x \in A, y \in B \}$$
+
+### 3. Principal Component Analysis (PCA)
+Performs dimensionality reduction by calculating the covariance matrix of centered features, finding its eigenvectors/eigenvalues, and projecting the data onto the top principal components.
+
+### 4. Apriori Association Rule Mining
+Mines frequent itemsets and generates association rules from transaction databases using:
+- **Support**: $P(A \cup B)$
+- **Confidence**: $P(B | A) = \frac{\text{Support}(A \cup B)}{\text{Support}(A)}$
+- **Lift**: $\frac{\text{Support}(A \cup B)}{\text{Support}(A) \times \text{Support}(B)}$
+
+---
+
+## Part J: Evaluation Measures & Hypothesis Testing
+
+### 1. Classification Metrics
+Based on the Confusion Matrix (TP, FP, TN, FN), we compute:
+- **Accuracy**: $\frac{TP + TN}{TP + TN + FP + FN}$
+- **Precision**: $\frac{TP}{TP + FP}$
+- **Recall**: $\frac{TP}{TP + FN}$
+- **F1-Score**: $2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$
+
+### 2. ROC (Receiver Operating Characteristic) Curve
+Plots the True Positive Rate (TPR/Recall) against the False Positive Rate (FPR) at various decision thresholds:
+$$\text{FPR} = \frac{FP}{FP + TN}$$
+
+### 3. K-Fold Cross Validation
+Splits the dataset into $K$ equal folds, iteratively training on $K-1$ folds and validating on the remaining fold to ensure robust generalization.
+
+### 4. Bootstrapping
+Generates new training sets of the same size as the original data by sampling with replacement to estimate model uncertainty.
